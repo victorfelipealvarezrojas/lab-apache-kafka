@@ -47,14 +47,18 @@ public class KafkaspringApplication {
 	}
 
 	@Scheduled(fixedDelay = 2000, initialDelay = 1000)
-	public void sendKafkaMessages(){
+	public void sendKafkaMessages() {
 		for (int i = 0; i < 100; i++) {
-			CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("devs4j-topic", "Message " + i);
+			CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
+					"devs4j-topic",
+					"Message " + i
+			);
+
 			future.whenComplete((result, ex) -> {
 				if (ex == null) {
 					System.out.println(
-									" Message sent: " + result.getProducerRecord().value()+
-									" OffSet: " + result.getRecordMetadata(). offset()+
+							" Message sent: " + result.getProducerRecord().value() +
+									" OffSet: " + result.getRecordMetadata().offset() +
 									" partition: " + result.getRecordMetadata().partition() +
 									" topic: " + result.getRecordMetadata().topic()
 					);
@@ -63,8 +67,5 @@ public class KafkaspringApplication {
 				}
 			});
 		}
-
 	}
-
-
 }
