@@ -68,7 +68,7 @@ public class KafkaConfiguration {
         return factory;
     }
 
-    // this method is used to configure the PrometheusMeterRegistry
+    // this method is used to configure the PrometheusMeterRegistry.
     @Bean
     public MeterRegistry meterRegistry() {
         return new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
