@@ -1,5 +1,8 @@
 package com.project.kafkaspring.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.IntegerSerializer;
@@ -9,10 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +35,9 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
+    public KafkaTemplate<String, String> kafkaProducerTemplate() {
         DefaultKafkaProducerFactory<String, String> factory = new DefaultKafkaProducerFactory<>(producerProperties());
+        factory.addListener(new MicrometerProducerListener<String, String>(meterRegistry())); // Add MicrometerProducerListener to metrics
         return new KafkaTemplate<>(factory);
     }
 
@@ -49,16 +50,25 @@ public class KafkaConfiguration {
         return props;
     }
 
+    // this method is used to configure the ConsumerFactory that is used to create the KafkaListenerContainerFactory
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(consumerProperties());
     }
 
+    // this method is used to configure the KafkaListenerContainerFactory that is used to create the message listener container
     @Bean(name = "listenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, String> listenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setBatchListener(true); // Enable batch listener
         factory.setConsumerFactory(consumerFactory());
+        factory.setConcurrency(3); // 3 hilos para consumir mensajes de forma concurrente
         return factory;
+    }
+
+    // this method is used to configure the PrometheusMeterRegistry
+    @Bean
+    public MeterRegistry meterRegistry() {
+        return new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     }
 }
