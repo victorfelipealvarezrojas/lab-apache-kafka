@@ -37,8 +37,7 @@ public class KafkaConfiguration {
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         DefaultKafkaProducerFactory<String, String> factory = new DefaultKafkaProducerFactory<>(producerProperties());
-        KafkaTemplate<String, String> template = new KafkaTemplate<>(factory);
-        return template;
+        return new KafkaTemplate<>(factory);
     }
 
     public Map<String, Object> consumerProperties() {

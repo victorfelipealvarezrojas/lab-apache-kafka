@@ -1,5 +1,6 @@
 package com.project.kafkaspring;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -26,9 +27,9 @@ public class KafkaspringApplication implements CommandLineRunner {
 					"max.poll.records=100", // es el número máximo de registros que un consumidor puede obtener en una sola llamada a poll
 			}
 	)
-	public void Listen(List<String> messages) {
+	public void Listen(List<ConsumerRecord<String, String>> messages) {
 		messages.forEach(
-				message -> System.out.println("Message: " + message)
+				message -> System.out.println("Message: " + message + " offSer: " + message.offset())
 		);
 	}
 
